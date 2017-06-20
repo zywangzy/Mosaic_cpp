@@ -4,6 +4,13 @@
 
 #include "imgSegmentation.h"
 
+mRect::mRect(int in_x, int in_y, int in_width, int in_height){
+    this->x = in_x;
+    this->y = in_y;
+    this->width = in_width;
+    this->height = in_height;
+}
+
 mRect::mRect(Rect rect) {
     this->x = rect.x;
     this->y = rect.y;
@@ -16,23 +23,11 @@ bool mRect::operator==(const mRect &rect) {
            (this->y == rect.y) && (this->height == rect.height);
 }
 
-/*
-template <>
-struct std::hash<mRect>{
-    size_t operator()(const mRect& rect) const{
-        int result = rect.x;
-        result = 31*result + rect.width;
-        result = 31*result + rect.y;
-        result = 31*result + rect.height;
-        return result;
-    }
-};
- */
-
-block::block(Mat &img, Rect &input_roi, int colorRes): roi(input_roi) {
+block::block(Mat &img, mRect &input_roi, int colorRes):roi(input_roi) {
     assert(colorHistVector::checkInBound(img, input_roi));
     assert(roi.height == roi.width);
     this->size = roi.height;
+    //this->roi = input_roi;
     this->colorhist = colorHistVector(img, roi, colorRes);
 }
 
@@ -41,16 +36,12 @@ bool block::operator==(const block &b) {
            (this->roi.y == b.roi.y) && (this->roi.width == b.roi.width);
 }
 
-imgSegmentation::imgSegmentation(Mat &img, double sim_threshold, int min_size, int max_size) {
-    this->similarity_threshold = sim_threshold;
-    this->min_size = min_size;
-    this->max_size = max_size;
+imgSegmentation::imgSegmentation(Mat &img, int color_resolution, double sim_threshold, int min_size, int max_size):
+    color_resolution(color_resolution), similarity_threshold(sim_threshold), min_size(min_size), max_size(max_size)
+{
     this->rois = unordered_map<mRect, block>();
     imgCropper(img, min_size);
-    imshow("original", img);
-    cvWaitKey();
-    imshow("cropped image", this->mImg);
-    cvWaitKey();
+    segment();
 }
 
 void imgSegmentation::imgCropper(Mat &img, int min_size) {
@@ -58,4 +49,20 @@ void imgSegmentation::imgCropper(Mat &img, int min_size) {
     int width_remainder = width % min_size, height_remainder = height % min_size;
     int final_width = width - width_remainder, final_height = height - height_remainder;
     this->mImg = img(Rect(width_remainder / 2, height_remainder / 2, final_width, final_height));
+}
+
+void imgSegmentation::segment() {
+    initialize_segments();
+}
+
+void imgSegmentation::initialize_segments() {
+    int x_num = this->mImg.cols / this->min_size,
+        y_num = this->mImg.rows / this->min_size;
+    for(int i = 0; i < x_num; i++){
+        for(int j = 0; j < y_num; j++){
+            mRect rect(i * min_size, j * min_size, min_size, min_size);
+            block mblock(this->mImg, rect, this->color_resolution);
+            this->rois[rect] = mblock;
+        }
+    }
 }

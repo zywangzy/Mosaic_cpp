@@ -14,6 +14,8 @@ using namespace cv;
 
 class mRect: public Rect{
 public:
+    mRect(){};
+    mRect(int x, int y, int width, int height);
     mRect(Rect rect);
     bool operator==(const mRect& rect);
 };
@@ -31,7 +33,7 @@ struct std::hash<mRect>{
 
 class block {
 public:
-    block(Mat &img, Rect &roi, int colorRes);
+    block(Mat &img, mRect &roi, int colorRes);
     bool operator==(const block& b);
 public:
     int size;
@@ -57,11 +59,14 @@ private:
     double similarity_threshold;
     int min_size;
     int max_size;
+    int color_resolution;
 public:
-    imgSegmentation(Mat &img, double similarity_threshold = 0.5, int min_size = 20, int max_size = 160);
-
+    imgSegmentation(Mat &img, int color_resolution = 10, double similarity_threshold = 0.5,
+                    int min_size = 20, int max_size = 160);
+    void segment();
 private:
     void imgCropper(Mat &img, int min_size);
+    void initialize_segments();
 };
 
 

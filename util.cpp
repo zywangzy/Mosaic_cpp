@@ -127,4 +127,5 @@ void util::batch_compute_colorHistVector() {
 void util::imgSegmentationTester() {
     Mat src = imread("../lena.bmp");
     imgSegmentation segment(src);
+    segment.segment();
 }
