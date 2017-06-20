@@ -4,12 +4,6 @@
 using namespace std;
 using namespace cv;
 
-
-// Reference to matlab quadtree decomposition
-void qtDecomp(Mat& src){
-    
-}
-
 int main(int argc, char** argv) {
     util::check_cv_version();
     // Step 1: compress library images to 100*100.
