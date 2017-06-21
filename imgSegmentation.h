@@ -33,7 +33,7 @@ struct std::hash<mRect>{
 
 class block {
 public:
-    block(Mat &img, mRect &roi, int colorRes);
+    block(Mat const& img, mRect const& roi, int colorRes);
     bool operator==(const block& b);
 public:
     int size;
@@ -55,7 +55,7 @@ struct std::hash<block>{
 class imgSegmentation {
 private:
     Mat mImg;
-    unordered_map<mRect, block> rois;
+    unordered_map<mRect, block*> map;
     double similarity_threshold;
     int min_size;
     int max_size;
@@ -64,9 +64,16 @@ public:
     imgSegmentation(Mat &img, int color_resolution = 10, double similarity_threshold = 0.5,
                     int min_size = 20, int max_size = 160);
     void segment();
+    void print();
 private:
     void imgCropper(Mat &img, int min_size);
     void initialize_segments();
+    /**
+     * If there're 4 neighbor segments with same size and color histogram similarities
+     * between each pair are above threshold, then merge them. Do this step until there
+     * are no segments satisfying the condition.
+     * */
+    void merge_segments();
 };
 
 

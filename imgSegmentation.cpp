@@ -23,7 +23,7 @@ bool mRect::operator==(const mRect &rect) {
            (this->y == rect.y) && (this->height == rect.height);
 }
 
-block::block(Mat &img, mRect &input_roi, int colorRes):roi(input_roi) {
+block::block(Mat const& img, mRect const& input_roi, const int colorRes):roi(input_roi) {
     assert(colorHistVector::checkInBound(img, input_roi));
     assert(roi.height == roi.width);
     this->size = roi.height;
@@ -39,9 +39,8 @@ bool block::operator==(const block &b) {
 imgSegmentation::imgSegmentation(Mat &img, int color_resolution, double sim_threshold, int min_size, int max_size):
     color_resolution(color_resolution), similarity_threshold(sim_threshold), min_size(min_size), max_size(max_size)
 {
-    this->rois = unordered_map<mRect, block>();
+    this->map = unordered_map<mRect, block*>();
     imgCropper(img, min_size);
-    segment();
 }
 
 void imgSegmentation::imgCropper(Mat &img, int min_size) {
@@ -53,6 +52,8 @@ void imgSegmentation::imgCropper(Mat &img, int min_size) {
 
 void imgSegmentation::segment() {
     initialize_segments();
+    print();
+    merge_segments();
 }
 
 void imgSegmentation::initialize_segments() {
@@ -60,9 +61,22 @@ void imgSegmentation::initialize_segments() {
         y_num = this->mImg.rows / this->min_size;
     for(int i = 0; i < x_num; i++){
         for(int j = 0; j < y_num; j++){
-            mRect rect(i * min_size, j * min_size, min_size, min_size);
-            block mblock(this->mImg, rect, this->color_resolution);
-            this->rois[rect] = mblock;
+            const mRect rect(i * min_size, j * min_size, min_size, min_size);
+            block* mblock = new block(this->mImg, rect, this->color_resolution);
+            this->map[rect] = mblock;
         }
     }
+}
+
+void imgSegmentation::merge_segments(){
+
+}
+
+void imgSegmentation::print() {
+    cout << "********imgSegmentation Info*********" << endl;
+    cout << "similarity_threshold = " << this->similarity_threshold << endl;
+    cout << "min_size = " << this->min_size << ", max_size = " << this->max_size << endl;
+    cout << "color_resolution = " << this->color_resolution << endl;
+    cout << "size(map<mRect, block*>) = " << this->map.size() << endl;
+    cout << "*************************************" << endl;
 }
