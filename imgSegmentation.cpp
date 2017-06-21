@@ -54,6 +54,7 @@ void imgSegmentation::segment() {
     initialize_segments();
     print();
     merge_segments();
+    print();
 }
 
 void imgSegmentation::initialize_segments() {
@@ -69,7 +70,49 @@ void imgSegmentation::initialize_segments() {
 }
 
 void imgSegmentation::merge_segments(){
+    bool stop = false;
+    while(!stop){
+        bool merges_exist = false;
+        unordered_map<mRect, block*>::iterator it = this->map.begin();
+        for(;it != map.end(); it++){
+            mRect rect = it->first;//rect
+            vector<vector<mRect>> candidates = get_candidate_rois(rect);
+            for(auto items: candidates){
+                if(valid_for_merge(items)){
+                    mRect newroi = merge_rois(items);
+                    block* newblock = new block(this->mImg, newroi, this->color_resolution);
+                    for(mRect item: items){
+                        //delete entries
+                        delete this->map[item];
+                        //make entry in map clean
+                        //have to google it here
+                    }
+                    this->map[newroi] = newblock;
+                    merges_exist = true;
+                    break;
+                }
+            }
+        }
+        stop = !merges_exist;
+    }
+}
 
+vector<vector<mRect>> imgSegmentation::get_candidate_rois(const mRect &rect) {
+    assert(rect.width == rect.height);
+    vector<vector<mRect>> result;
+    //for loop to generate candidate roi positions
+    return result;
+}
+
+bool imgSegmentation::valid_for_merge(vector<mRect> rois) {
+    //dummy code
+    return true;
+}
+
+mRect imgSegmentation::merge_rois(vector<mRect> rois) {
+    //dummy code
+    mRect result;
+    return result;
 }
 
 void imgSegmentation::print() {
@@ -78,5 +121,6 @@ void imgSegmentation::print() {
     cout << "min_size = " << this->min_size << ", max_size = " << this->max_size << endl;
     cout << "color_resolution = " << this->color_resolution << endl;
     cout << "size(map<mRect, block*>) = " << this->map.size() << endl;
+    cout << "number of buckets = " << this->map.bucket_count() << endl;
     cout << "*************************************" << endl;
 }

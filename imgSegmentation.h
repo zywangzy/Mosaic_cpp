@@ -74,6 +74,9 @@ private:
      * are no segments satisfying the condition.
      * */
     void merge_segments();
+    vector<vector<mRect>> get_candidate_rois(const mRect& rect);
+    bool valid_for_merge(vector<mRect> rois);
+    mRect merge_rois(vector<mRect> rois);
 };
 
 
