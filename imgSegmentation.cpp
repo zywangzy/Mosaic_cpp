@@ -63,9 +63,10 @@ void imgSegmentation::initialize_segments() {
     for(int i = 0; i < x_num; i++){
         for(int j = 0; j < y_num; j++){
             const mRect rect(i * min_size, j * min_size, min_size, min_size);
-            block* mblock = new block(this->mImg, rect, this->color_resolution);
-            this->map[rect] = mblock;
+            block* mblock = new block(mImg, rect, color_resolution);
+            map[rect] = mblock;
         }
+        //after this loop, map.size() is still 0... have to figure out what's wrong here!
     }
 }
 
@@ -73,8 +74,8 @@ void imgSegmentation::merge_segments(){
     bool stop = false;
     while(!stop){
         bool merges_exist = false;
-        unordered_map<mRect, block*>::iterator it = this->map.begin();
-        for(;it != map.end(); it++){
+        //the program stops here... also have to figure out why...
+        for(unordered_map<mRect, block*>::iterator it = map.begin();it != map.end(); it++){
             mRect rect = it->first;//rect
             vector<vector<mRect>> candidates = get_candidate_rois(rect);
             for(auto items: candidates){
@@ -85,7 +86,7 @@ void imgSegmentation::merge_segments(){
                         //delete entries
                         delete this->map[item];
                         //make entry in map clean
-                        //have to google it here
+                        map.erase(item);
                     }
                     this->map[newroi] = newblock;
                     merges_exist = true;
@@ -100,19 +101,52 @@ void imgSegmentation::merge_segments(){
 vector<vector<mRect>> imgSegmentation::get_candidate_rois(const mRect &rect) {
     assert(rect.width == rect.height);
     vector<vector<mRect>> result;
-    //for loop to generate candidate roi positions
+    int x = rect.x, y = rect.y, w = rect.width, h = rect.height;
+    mRect top1(x-w, y-h, w, h), top2(x, y-h, w, h), top3(x+w, y-h, w, h);
+    mRect mid1(x-w, y, w, h), mid2(rect), mid3(x+w, y, w, h);
+    mRect bot1(x-w, y+h, w, h), bot2(x, y+h, w, h), bot3(x+w, y+h, w, h);
+    vector<mRect> topleft, topright, bottomleft, bottomright;
+    topleft.push_back(top1); topleft.push_back(top2);
+    topright.push_back(mid1); topright.push_back(mid2);
+    topright.push_back(top2); topright.push_back(top3);
+    topright.push_back(mid2); topright.push_back(mid3);
+    bottomleft.push_back(mid1); bottomleft.push_back(mid2);
+    bottomleft.push_back(bot1); bottomleft.push_back(bot2);
+    bottomright.push_back(mid2); bottomright.push_back(mid3);
+    bottomright.push_back(bot2); bottomright.push_back(bot3);
+    result.push_back(topleft); result.push_back(topright);
+    result.push_back(bottomleft); result.push_back(bottomright);
     return result;
 }
 
-bool imgSegmentation::valid_for_merge(vector<mRect> rois) {
+bool imgSegmentation::valid_for_merge(const vector<mRect> rois) {
     //dummy code
+    assert(rois.size() == 4);
+    //assume the rois have same size
+    /*int width = rois[0].width, height = rois[0].height;
+    for(int i = 1; i < 4; i++){
+        if(rois[i].width != width || rois[i].height != height) return false;
+    }*/
+    for(int i = 0; i < 4; i++){
+        if(!map.count(rois[i])) return false;//verify the key exists in map
+    }
+    for(int i = 0; i < 3; i++){
+        for(int j = i+1; j < 4; j++){
+            if(colorHistVector::colorSimilarity(map[rois[i]]->colorhist,
+                                                map[rois[j]]->colorhist) < similarity_threshold)
+                return false;
+        }
+    }
     return true;
 }
 
-mRect imgSegmentation::merge_rois(vector<mRect> rois) {
-    //dummy code
-    mRect result;
-    return result;
+mRect imgSegmentation::merge_rois(const vector<mRect> rois) {
+    //assume the rois have same sizes
+    int x0 = rois[0].x, y0 = rois[0].y;
+    int x3 = rois[3].x, y3 = rois[3].y;
+    int w = rois[0].width, h = rois[0].height;
+    assert((x0 + w == x3) && (y0 + h == y3));
+    return mRect(x0, y0, 2*w, 2*h);
 }
 
 void imgSegmentation::print() {
