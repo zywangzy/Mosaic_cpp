@@ -128,4 +128,5 @@ void util::imgSegmentationTester() {
     Mat src = imread("../lena.bmp");
     imgSegmentation segment(src);
     segment.segment();
+    segment.showMergeResult();
 }

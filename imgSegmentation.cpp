@@ -66,7 +66,6 @@ void imgSegmentation::initialize_segments() {
             block* mblock = new block(mImg, rect, color_resolution);
             map[rect] = mblock;
         }
-        //after this loop, map.size() is still 0... have to figure out what's wrong here!
     }
 }
 
@@ -74,11 +73,11 @@ void imgSegmentation::merge_segments(){
     bool stop = false;
     while(!stop){
         bool merges_exist = false;
-        //the program stops here... also have to figure out why...
         for(unordered_map<mRect, block*>::iterator it = map.begin();it != map.end(); it++){
             mRect rect = it->first;//rect
             vector<vector<mRect>> candidates = get_candidate_rois(rect);
-            for(auto items: candidates){
+            for(int i = 0; i < candidates.size(); i++){
+                vector<mRect> items = candidates[i];
                 if(valid_for_merge(items)){
                     mRect newroi = merge_rois(items);
                     block* newblock = new block(this->mImg, newroi, this->color_resolution);
@@ -107,7 +106,7 @@ vector<vector<mRect>> imgSegmentation::get_candidate_rois(const mRect &rect) {
     mRect bot1(x-w, y+h, w, h), bot2(x, y+h, w, h), bot3(x+w, y+h, w, h);
     vector<mRect> topleft, topright, bottomleft, bottomright;
     topleft.push_back(top1); topleft.push_back(top2);
-    topright.push_back(mid1); topright.push_back(mid2);
+    topleft.push_back(mid1); topleft.push_back(mid2);
     topright.push_back(top2); topright.push_back(top3);
     topright.push_back(mid2); topright.push_back(mid3);
     bottomleft.push_back(mid1); bottomleft.push_back(mid2);
@@ -120,7 +119,6 @@ vector<vector<mRect>> imgSegmentation::get_candidate_rois(const mRect &rect) {
 }
 
 bool imgSegmentation::valid_for_merge(const vector<mRect> rois) {
-    //dummy code
     assert(rois.size() == 4);
     //assume the rois have same size
     /*int width = rois[0].width, height = rois[0].height;
@@ -157,4 +155,15 @@ void imgSegmentation::print() {
     cout << "size(map<mRect, block*>) = " << this->map.size() << endl;
     cout << "number of buckets = " << this->map.bucket_count() << endl;
     cout << "*************************************" << endl;
+}
+
+void imgSegmentation::showMergeResult() {
+    Mat segment_result(mImg);
+    Scalar color(255, 0, 0);
+    for(unordered_map<mRect, block*>::iterator it = map.begin(); it != map.end(); it++){
+        rectangle(segment_result, it->first, color);
+    }
+    imwrite("../lena_segment.png", segment_result);
+    imshow("Segmentation result", segment_result);
+    cvWaitKey();
 }

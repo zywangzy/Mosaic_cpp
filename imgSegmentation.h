@@ -65,6 +65,7 @@ public:
                     int min_size = 20, int max_size = 160);
     void segment();
     void print();
+    void showMergeResult();
 private:
     void imgCropper(Mat &img, int min_size);
     void initialize_segments();
