@@ -23,18 +23,19 @@ bool mRect::operator==(const mRect &rect) {
            (this->y == rect.y) && (this->height == rect.height);
 }
 
-block::block(Mat const& img, mRect const& input_roi, const int colorRes):roi(input_roi) {
+block::block(Mat const& img, mRect const& input_roi, const int colorRes) {
     assert(colorHistVector::checkInBound(img, input_roi));
-    assert(roi.height == roi.width);
-    this->size = roi.height;
+    assert(input_roi.height == input_roi.width);
+    this->size = input_roi.height;
     //this->roi = input_roi;
-    this->colorhist = colorHistVector(img, roi, colorRes);
+    this->colorhist = colorHistVector(img, input_roi, colorRes);
 }
 
+/*
 bool block::operator==(const block &b) {
     return (this->size == b.size) && (this->roi.x == b.roi.x) &&
            (this->roi.y == b.roi.y) && (this->roi.width == b.roi.width);
-}
+}*/
 
 imgSegmentation::imgSegmentation(Mat &img, int color_resolution, double sim_threshold, int min_size, int max_size):
     color_resolution(color_resolution), similarity_threshold(sim_threshold), min_size(min_size), max_size(max_size)
@@ -70,22 +71,26 @@ void imgSegmentation::initialize_segments() {
 }
 
 void imgSegmentation::merge_segments(){
+    cout << "Segment merging..." << endl;
+    int line_width = 50, line_count = 0;
     bool stop = false;
     while(!stop){
+        //cout << ".";
+        //if((++line_count) % line_width == 0) cout << endl;
+        cout << ++line_count << "   " << map.size() << endl;
         bool merges_exist = false;
-        for(unordered_map<mRect, block*>::iterator it = map.begin();it != map.end(); it++){
-            mRect rect = it->first;//rect
+        unordered_set<mRect> merged;
+        for(unordered_map<mRect, block*>::iterator it = map.begin(); it != map.end(); it++){
+            if (merged.count(it->first) > 0) continue;//erase in for loop would make the iteration afterward invalid
+            mRect rect = it->first;//it would raise Exception: EXC_BAD_ACCESS (code=EXC_I386_GPFLT) this line
             vector<vector<mRect>> candidates = get_candidate_rois(rect);
             for(int i = 0; i < candidates.size(); i++){
                 vector<mRect> items = candidates[i];
-                if(valid_for_merge(items)){
+                if(valid_for_merge(items, merged)){
                     mRect newroi = merge_rois(items);
                     block* newblock = new block(this->mImg, newroi, this->color_resolution);
                     for(mRect item: items){
-                        //delete entries
-                        delete this->map[item];
-                        //make entry in map clean
-                        map.erase(item);
+                        merged.insert(item);
                     }
                     this->map[newroi] = newblock;
                     merges_exist = true;
@@ -93,8 +98,15 @@ void imgSegmentation::merge_segments(){
                 }
             }
         }
+        for(unordered_set<mRect>::iterator it = merged.begin(); it != merged.end(); it++){
+            //delete entries
+            delete this->map[*it];
+            //make entry in map clean
+            map.erase(*it);
+        }
         stop = !merges_exist;
     }
+    cout << endl;
 }
 
 vector<vector<mRect>> imgSegmentation::get_candidate_rois(const mRect &rect) {
@@ -118,7 +130,7 @@ vector<vector<mRect>> imgSegmentation::get_candidate_rois(const mRect &rect) {
     return result;
 }
 
-bool imgSegmentation::valid_for_merge(const vector<mRect> rois) {
+bool imgSegmentation::valid_for_merge(const vector<mRect>& rois, const unordered_set<mRect>& merged) {
     assert(rois.size() == 4);
     //assume the rois have same size
     /*int width = rois[0].width, height = rois[0].height;
@@ -127,6 +139,7 @@ bool imgSegmentation::valid_for_merge(const vector<mRect> rois) {
     }*/
     for(int i = 0; i < 4; i++){
         if(!map.count(rois[i])) return false;//verify the key exists in map
+        if(merged.count(rois[i])) return false;
     }
     for(int i = 0; i < 3; i++){
         for(int j = i+1; j < 4; j++){
@@ -157,13 +170,13 @@ void imgSegmentation::print() {
     cout << "*************************************" << endl;
 }
 
-void imgSegmentation::showMergeResult() {
+void imgSegmentation::saveMergeResult(string path) {
     Mat segment_result(mImg);
     Scalar color(255, 0, 0);
     for(unordered_map<mRect, block*>::iterator it = map.begin(); it != map.end(); it++){
         rectangle(segment_result, it->first, color);
     }
-    imwrite("../lena_segment.png", segment_result);
+    imwrite(path, segment_result);
     imshow("Segmentation result", segment_result);
     cvWaitKey();
 }

@@ -5,6 +5,7 @@
 #ifndef MOSAIC_IMGSEGMENTATION_H
 #define MOSAIC_IMGSEGMENTATION_H
 
+#include <unordered_set>
 #include <unordered_map>
 #include <opencv/cv.hpp>
 #include "colorHistVector.h"
@@ -34,13 +35,14 @@ struct std::hash<mRect>{
 class block {
 public:
     block(Mat const& img, mRect const& roi, int colorRes);
-    bool operator==(const block& b);
+    //bool operator==(const block& b);
 public:
     int size;
-    mRect roi;
+    //mRect roi;
     colorHistVector colorhist;
 };
 
+/*
 template <>
 struct std::hash<block>{
     size_t operator()(const block& b) const {
@@ -50,7 +52,7 @@ struct std::hash<block>{
         result = 31*result + b.roi.y;
         return result;
     }
-};
+};*/
 
 class imgSegmentation {
 private:
@@ -65,7 +67,7 @@ public:
                     int min_size = 20, int max_size = 160);
     void segment();
     void print();
-    void showMergeResult();
+    void saveMergeResult(string path);
 private:
     void imgCropper(Mat &img, int min_size);
     void initialize_segments();
@@ -76,7 +78,7 @@ private:
      * */
     void merge_segments();
     vector<vector<mRect>> get_candidate_rois(const mRect& rect);
-    bool valid_for_merge(const vector<mRect> rois);
+    bool valid_for_merge(const vector<mRect>& rois, const unordered_set<mRect>& merged);
     mRect merge_rois(const vector<mRect> rois);
 };
 

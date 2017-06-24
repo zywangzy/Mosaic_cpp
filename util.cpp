@@ -125,8 +125,17 @@ void util::batch_compute_colorHistVector() {
 }
 
 void util::imgSegmentationTester() {
+    time_t raw_start_time; time(&raw_start_time);
+    string start_time = asctime(localtime(&raw_start_time));
+
     Mat src = imread("../lena.bmp");
-    imgSegmentation segment(src);
+    imgSegmentation segment(src, 10, 0.5, 10);
     segment.segment();
-    segment.showMergeResult();
+
+    time_t raw_end_time; time(&raw_end_time);
+    string end_time = asctime(localtime(&raw_end_time));
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    segment.saveMergeResult("../lena_segment.png");
 }
