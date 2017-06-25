@@ -6,19 +6,23 @@
 
 mosaicGenerator::mosaicGenerator(imgSegmentation &segment_obj, string basic_path) {
     this->basic_path = basic_path;
-    this->img_size = segment_obj.get_img_size();
+    this->src_img = segment_obj.get_img();
     this->img_segments = segment_obj.getMap();
     library_reader();
 }
 
 Mat mosaicGenerator::generate() {
-    Mat result(img_size, CV_8UC3);
+    cout << "Generating mosaic..." << endl;
+    Mat result(src_img);
     string img_path = basic_path + "compressed/";
+    cout << "img_path = " << img_path << endl;
+    cout << "Doing for loop..." << endl;
     for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
             it != img_segments.end(); it++){
         string key = find_target_in_lib(it->second->colorhist);
-        //result(it->first) = imread(path);
-        imread(img_path + key + ".jpg").copyTo(result(it->first));
+        Mat src = imread(img_path + key + ".jpg");
+        resize(src, src, Size(it->first.width, it->first.height));
+        src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
     }
     return result;
 }
@@ -45,5 +49,6 @@ string mosaicGenerator::find_target_in_lib(colorHistVector &histVector) {
             best_sim = sim;
         }
     }
+    cout << "bestsim = " << best_sim << endl;
     return result;
 }

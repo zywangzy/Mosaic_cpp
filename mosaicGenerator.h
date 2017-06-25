@@ -13,7 +13,7 @@ private:
     string basic_path;
     unordered_map<mRect, block*> img_segments;
     unordered_map<string, colorHistVector> img_lib;
-    Size img_size;
+    Mat src_img;
 public:
     mosaicGenerator(imgSegmentation& segment_obj, string basic_path);
     Mat generate();
