@@ -128,8 +128,8 @@ void util::imgSegmentationTester() {
     time_t raw_start_time; time(&raw_start_time);
     string start_time = asctime(localtime(&raw_start_time));
 
-    Mat src = imread("../lena.bmp");
-    imgSegmentation segment(src, 10, 0.5, 10);
+    Mat src = imread("../steve_jobs.jpg");
+    imgSegmentation segment(src, 10, 0.45, 5);
     segment.segment();
 
     time_t raw_end_time; time(&raw_end_time);
@@ -137,5 +137,33 @@ void util::imgSegmentationTester() {
     cout << "From: " << start_time;
     cout << "To: " << end_time;
 
-    segment.saveMergeResult("../lena_segment.png");
+    segment.saveMergeResult("../jobs_segment.png");
+}
+
+void util::mosaicGeneratorTester() {
+    time_t raw_start_time; time(&raw_start_time);
+    string start_time = asctime(localtime(&raw_start_time));
+
+    Mat src = imread("../steve_jobs.jpg");
+    imgSegmentation segment(src, 20, 0.45, 10);
+    segment.segment();
+
+    time_t raw_end_time; time(&raw_end_time);
+    string end_time = asctime(localtime(&raw_end_time));
+    cout << "Image segmentation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    time(&raw_start_time);
+    start_time = asctime(localtime(&raw_start_time));
+    mosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/");
+    Mat result = generator.generate();
+    time(&raw_end_time);
+    end_time = asctime(localtime(&raw_end_time));
+
+    cout << "Mosaic Generation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    imwrite("../mosaic_result.png", result);
 }

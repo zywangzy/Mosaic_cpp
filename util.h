@@ -14,6 +14,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "colorHistVector.h"
 #include "imgSegmentation.h"
+#include "mosaicGenerator.h"
 
 using namespace std;
 using namespace cv;
@@ -49,6 +50,8 @@ public:
     static void batch_compute_colorHistVector();
 
     static void imgSegmentationTester();
+
+    static void mosaicGeneratorTester();
 };
 
 

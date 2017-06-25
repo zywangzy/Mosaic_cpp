@@ -68,6 +68,8 @@ public:
     void segment();
     void print();
     void saveMergeResult(string path);
+    unordered_map<mRect, block*> getMap(){ return this->map; };
+    Size get_img_size(){ return mImg.size(); };
 private:
     void imgCropper(Mat &img, int min_size);
     void initialize_segments();
