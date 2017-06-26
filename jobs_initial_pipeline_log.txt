@@ -1,0 +1,35 @@
+/Users/…/Mosaic_cpp/cmake-build-debug/Mosaic_cpp
+********** OpenCV Version **********
+3.2
+************************************
+********imgSegmentation Info*********
+similarity_threshold = 0.45
+min_size = 10, max_size = 160
+color_resolution = 20
+size(map<mRect, block*>) = 3750
+number of buckets = 6421
+*************************************
+Segment merging...
+1   3750
+2   1890
+3   1797
+********imgSegmentation Info*********
+similarity_threshold = 0.45
+min_size = 10, max_size = 160
+color_resolution = 20
+size(map<mRect, block*>) = 1797
+number of buckets = 6421
+*************************************
+Image segmentation
+From: Sun Jun 25 00:26:12 2017
+To: Sun Jun 25 00:26:16 2017
+Generating mosaic...
+img_path = ../../CVML/Mosaic/aflw 2/data/flickr/compressed/
+Doing for loop...
+
+Mosaic Generation
+From: Sun Jun 25 00:26:16 2017
+To: Sun Jun 25 00:51:59 2017
+
+Process finished with exit code 0
+
