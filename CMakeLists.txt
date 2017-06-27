@@ -6,7 +6,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cpp colorHistVector.cpp colorHistVector.h util.cpp util.h quadTree.cpp quadTree.h imgSegmentation.cpp imgSegmentation.h mosaicGenerator.cpp mosaicGenerator.h)
+set(SOURCE_FILES main.cpp colorHistVector.cpp colorHistVector.h util.cpp util.h quadTree.cpp quadTree.h imgSegmentation.cpp imgSegmentation.h mosaicGenerator.cpp mosaicGenerator.h pca.cpp pca.h)
 add_executable(Mosaic_cpp ${SOURCE_FILES})
 
 target_link_libraries( Mosaic_cpp ${OpenCV_LIBS} )

@@ -17,6 +17,7 @@ private:
 public:
     mosaicGenerator(imgSegmentation& segment_obj, string basic_path);
     Mat generate();
+    unordered_map<string, colorHistVector>* get_img_lib() { return &img_lib; };
 private:
     void library_reader();
     string find_target_in_lib(colorHistVector& histVector);
