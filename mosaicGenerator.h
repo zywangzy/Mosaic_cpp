@@ -27,6 +27,7 @@ public:
      * @return
      */
     Mat generate();
+    unordered_map<string, colorHistVector>* get_img_lib() { return &img_lib; };
 private:
     /**
      * Helper method to get all the colorHistVector objects from library.
