@@ -105,6 +105,14 @@ double colorHistVector::colorDistance(const colorHistVector &vector1,
                 pow(weighted_vec1[2] - weighted_vec2[2],2));
 }
 
+int colorHistVector::get_color_level_count() {
+    return this->colorLevelCount;
+}
+
+vector<vector<vector<double>>>* colorHistVector::get_ptr_to_hist() {
+    return &(this->mVector);
+}
+
 void colorHistVector::exportToFile(const string path) {
     cout << "Saving colorHistVector to " << path << endl;
     FileStorage fs(path, FileStorage::WRITE);

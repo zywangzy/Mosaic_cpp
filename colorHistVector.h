@@ -70,7 +70,16 @@ public:
      * Helper private method. Check if the roi is in the bound of image.
      */
     static bool checkInBound(const Mat &img, const Rect &roi);
-
+    /**
+     * Get color level count of this object.
+     * @return this->colorLevelCount
+     */
+    int get_color_level_count();
+    /**
+     * Get a pointer to 3d-matrix.
+     * @return
+     */
+    vector<vector<vector<double>>>* get_ptr_to_hist();
 private:
     /**
      * Helper private method. Initializes the 3-d vector.
