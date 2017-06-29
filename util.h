@@ -15,6 +15,7 @@
 #include "colorHistVector.h"
 #include "imgSegmentation.h"
 #include "mosaicGenerator.h"
+#include "pca.h"
 
 using namespace std;
 using namespace cv;
@@ -52,6 +53,8 @@ public:
     static void imgSegmentationTester();
 
     static void mosaicGeneratorTester();
+
+    static void pcaTester();
 };
 
 

@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
     //Next step: batch processing color histogram vector for library images.
     //util::batch_compute_colorHistVector();
     //util::imgSegmentationTester();
-    util::mosaicGeneratorTester();
+    //util::mosaicGeneratorTester();
+    util::pcaTester();
     return 0;
 }

@@ -13,6 +13,8 @@ using namespace std;
 using namespace cv;
 using namespace Eigen;
 
+const static IOFormat CSV_Format(StreamPrecision, DontAlignCols, ", ", "\n");
+
 class pca {
 private:
     vector<VectorXd> hist_list;

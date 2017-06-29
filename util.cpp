@@ -167,3 +167,46 @@ void util::mosaicGeneratorTester() {
 
     imwrite("../mosaic_result.png", result);
 }
+
+void util::pcaTester() {
+    time_t raw_start_time; time(&raw_start_time);
+    string start_time = asctime(localtime(&raw_start_time));
+
+    Mat src = imread("../steve_jobs.jpg");
+    imgSegmentation segment(src, 20, 0.45, 20);
+    segment.segment();
+
+    time_t raw_end_time; time(&raw_end_time);
+    string end_time = asctime(localtime(&raw_end_time));
+    cout << "Image segmentation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    //time(&raw_start_time);
+    start_time = asctime(localtime(&raw_start_time));
+    mosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/");
+    time(&raw_start_time);
+    try {
+        pca principle_component(generator, 30);
+        principle_component.get_eigen_colorhist();
+    }
+    catch (exception& exception1){
+        cout << exception1.what() << endl;
+        exit(110);
+    }
+    time(&raw_end_time);
+    cout << "pca computation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    /*
+    Mat result = generator.generate();
+    time(&raw_end_time);
+    end_time = asctime(localtime(&raw_end_time));
+
+    cout << "Mosaic Generation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    imwrite("../mosaic_result.png", result);*/
+}
