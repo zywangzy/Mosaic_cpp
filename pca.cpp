@@ -34,42 +34,67 @@ pca::pca(string basic_path, int eigen_number) {
     }
 }
 
-//Placeholder
-void pca::get_eigen_colorhist() {
+void pca::get_eigen_colorhist(bool read_cov_mat, bool use_svd) {
     long list_size = hist_list.size();
-    //Get the average vector of input
-    VectorXd sum(vector_dimension);
-    for(int i = 0; i < vector_dimension; i++) sum[i] = 0;
-    for(int i = 0; i < list_size; i++){
-        sum = sum + hist_list[i];
-    }
-    VectorXd mean = (1.0 / list_size) * sum;
-    cout << "Got mean" << endl;
-    //Initialize Covariance Matrix
     MatrixXd sigma(vector_dimension, vector_dimension);
-    for(int x = 0; x < vector_dimension; x++){
-        for(int y = 0; y < vector_dimension; y++){
-            sigma(y, x) = 0;
+    if(!read_cov_mat){
+        //Get the average vector of input
+        VectorXd sum(vector_dimension);
+        for(int i = 0; i < vector_dimension; i++) sum[i] = 0;
+        for(int i = 0; i < list_size; i++){
+            sum = sum + hist_list[i];
+        }
+        VectorXd mean = (1.0 / list_size) * sum;
+        cout << "Got mean" << endl;
+        //Initialize Covariance Matrix
+
+        for(int x = 0; x < vector_dimension; x++){
+            for(int y = 0; y < vector_dimension; y++){
+                sigma(y, x) = 0;
+            }
+        }
+        cout << "Initialized covariance matrix" << endl;
+        //Get the Covariance Matrix
+        for(int i = 0; i < list_size; i++){
+            cout << (i+1)  << " out of " << list_size << endl;
+            VectorXd diff = hist_list[i] - mean;
+            sigma += diff * diff.transpose();
+        }
+        sigma *= (1.0 / list_size);
+        ofstream sigma_file("../sigma.csv");
+        sigma_file << sigma.format(CSV_Format);
+        sigma_file.close();
+    }
+    else{ //read from file
+        ifstream cov_mat_file;
+        cov_mat_file.open("../sigma.csv");
+        string line;
+        int row = 0, col;
+        while(getline(cov_mat_file, line)){
+            stringstream linestream(line);
+            string cell;
+            col = 0;
+            while(getline(linestream, cell, ',')){
+                sigma(row, col) = stod(cell);
+                col++;
+            }
+            row++;
         }
     }
-    cout << "Initialized covariance matrix" << endl;
-    //Get the Covariance Matrix
-    for(int i = 0; i < list_size; i++){
-        cout << i  << " out of " << list_size << endl;
-        VectorXd diff = hist_list[i] - mean;
-        sigma += diff * diff.transpose();
-    }
-    sigma *= (1.0 / list_size);
-    ofstream sigma_file("../sigma.csv");
-    sigma_file << sigma.format(CSV_Format);
-    sigma_file.close();
     cout << "Got sigma ..." << endl;
     //Get the eigen values and vectors of Covariance Matrix
-    EigenSolver<MatrixXd> eigenSolver(sigma);
-    cout << "values: " << endl << eigenSolver.eigenvalues() << endl;
-    for(int k = 0; k < 30; k++){
-        cout << "Index: " << k  << endl
-             << eigenSolver.eigenvectors().col(k) << endl;
+    if(use_svd){
+        BDCSVD<MatrixXd> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        cout << "MatrixU: " << svd.matrixU() << endl;
+        cout << "MatrixV: " << svd.matrixV() << endl;
+    }
+    else{
+        EigenSolver<MatrixXd> eigenSolver(sigma);
+        cout << "values: " << endl << eigenSolver.eigenvalues() << endl;
+        for(int k = 0; k < 30; k++){
+            cout << "Index: " << k  << endl
+                 << eigenSolver.eigenvectors().col(k) << endl;
+        }
     }
 }
 

@@ -183,18 +183,14 @@ void util::pcaTester() {
     cout << "To: " << end_time;
 
     //time(&raw_start_time);
-    start_time = asctime(localtime(&raw_start_time));
     mosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/");
     time(&raw_start_time);
-    try {
-        pca principle_component(generator, 30);
-        principle_component.get_eigen_colorhist();
-    }
-    catch (exception& exception1){
-        cout << exception1.what() << endl;
-        exit(110);
-    }
+    start_time = asctime(localtime(&raw_start_time));
+    pca principle_component(generator, 30);
+    principle_component.get_eigen_colorhist(true, true);
+
     time(&raw_end_time);
+    end_time = asctime(localtime(&raw_end_time));
     cout << "pca computation" << endl;
     cout << "From: " << start_time;
     cout << "To: " << end_time;
