@@ -47,7 +47,6 @@ void pca::get_eigen_colorhist(bool read_cov_mat, bool use_svd) {
         VectorXd mean = (1.0 / list_size) * sum;
         cout << "Got mean" << endl;
         //Initialize Covariance Matrix
-
         for(int x = 0; x < vector_dimension; x++){
             for(int y = 0; y < vector_dimension; y++){
                 sigma(y, x) = 0;
@@ -85,8 +84,14 @@ void pca::get_eigen_colorhist(bool read_cov_mat, bool use_svd) {
     //Get the eigen values and vectors of Covariance Matrix
     if(use_svd){
         BDCSVD<MatrixXd> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
-        cout << "MatrixU: " << svd.matrixU() << endl;
-        cout << "MatrixV: " << svd.matrixV() << endl;
+        //cout << "MatrixU: " << svd.matrixU() << endl;
+        //cout << "MatrixV: " << svd.matrixV() << endl;
+        ofstream matU_file("../svd_matrixU.csv");
+        matU_file << svd.matrixU().format(CSV_Format);
+        matU_file.close();
+        ofstream matV_file("../svd_matrixV.csv");
+        matV_file << svd.matrixV().format(CSV_Format);
+        matV_file.close();
     }
     else{
         EigenSolver<MatrixXd> eigenSolver(sigma);
