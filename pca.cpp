@@ -103,7 +103,6 @@ void pca::get_eigen_colorhist(bool read_cov_mat, bool use_svd) {
     }
 }
 
-//Placeholder
 VectorXd pca::unfold_colorhist(colorHistVector &hist) {
     VectorXd result(vector_dimension);
     for(int i = 0; i < vector_dimension; i++) result[i] = 0;

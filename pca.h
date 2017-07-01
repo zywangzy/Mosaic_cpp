@@ -40,7 +40,7 @@ public:
     /**
      * Convert the 3d-matrix of color histogram to vector with size vector_dimension * 1.
      */
-    VectorXd unfold_colorhist(colorHistVector& hist);
+    static VectorXd unfold_colorhist(colorHistVector& hist);
 };
 
 

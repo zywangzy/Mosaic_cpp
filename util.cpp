@@ -194,15 +194,4 @@ void util::pcaTester() {
     cout << "pca computation" << endl;
     cout << "From: " << start_time;
     cout << "To: " << end_time;
-
-    /*
-    Mat result = generator.generate();
-    time(&raw_end_time);
-    end_time = asctime(localtime(&raw_end_time));
-
-    cout << "Mosaic Generation" << endl;
-    cout << "From: " << start_time;
-    cout << "To: " << end_time;
-
-    imwrite("../mosaic_result.png", result);*/
 }
