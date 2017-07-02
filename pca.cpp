@@ -24,7 +24,6 @@ pca::pca(string basic_path, int eigen_number) {
     string line;
     while(getline(list_file, line)){
         string name = line.substr(0, line.length()-4);
-        cout << name << endl;
         colorHistVector chv(hist_path + name + ".json");
         if(this->vector_dimension == 0){
             this->color_level_count = chv.get_color_level_count();
@@ -36,37 +35,43 @@ pca::pca(string basic_path, int eigen_number) {
 
 void pca::get_eigen_colorhist(bool read_cov_mat, bool use_svd) {
     long list_size = hist_list.size();
-    MatrixXd sigma(vector_dimension, vector_dimension);
+    MatrixXd sigma = MatrixXd::Zero(vector_dimension, vector_dimension);
+    MatrixXd raw_data = MatrixXd::Zero(list_size, vector_dimension);
     if(!read_cov_mat){
         //Get the average vector of input
-        VectorXd sum(vector_dimension);
-        for(int i = 0; i < vector_dimension; i++) sum[i] = 0;
+        VectorXd sum = VectorXd::Zero(vector_dimension);
         for(int i = 0; i < list_size; i++){
             sum = sum + hist_list[i];
+            raw_data.row(i) = hist_list[i];
         }
         VectorXd mean = (1.0 / list_size) * sum;
         cout << "Got mean" << endl;
-        //Initialize Covariance Matrix
-        for(int x = 0; x < vector_dimension; x++){
-            for(int y = 0; y < vector_dimension; y++){
-                sigma(y, x) = 0;
-            }
-        }
-        cout << "Initialized covariance matrix" << endl;
         //Get the Covariance Matrix
         for(int i = 0; i < list_size; i++){
-            cout << (i+1)  << " out of " << list_size << endl;
-            VectorXd diff = hist_list[i] - mean;
-            sigma += diff * diff.transpose();
+            raw_data.row(i) -= mean;
         }
+        VectorXd stddev = VectorXd::Zero(vector_dimension);
+        for(int j = 0; j < vector_dimension; j++){
+            stddev[j] = sqrt(raw_data.col(j).squaredNorm() / (list_size*1.0));
+            raw_data.col(j).normalize();
+        }
+        raw_data *= sqrt(list_size);
+        sigma = raw_data.transpose() * raw_data;
         sigma *= (1.0 / list_size);
-        ofstream sigma_file("../sigma.csv");
+        ofstream mean_file("../pca_mean.csv");
+        mean_file << mean.format(CSV_Format);
+        mean_file.close();
+        ofstream stddev_file("../pca_stddev.csv");
+        stddev_file << stddev.format(CSV_Format);
+        stddev_file.close();
+        ofstream sigma_file("../pca_sigma.csv");
         sigma_file << sigma.format(CSV_Format);
         sigma_file.close();
+        cout << "Saved sigma, mean and stddev to file" << endl;
     }
     else{ //read from file
         ifstream cov_mat_file;
-        cov_mat_file.open("../sigma.csv");
+        cov_mat_file.open("../pca_sigma.csv");
         string line;
         int row = 0, col;
         while(getline(cov_mat_file, line)){
@@ -79,6 +84,7 @@ void pca::get_eigen_colorhist(bool read_cov_mat, bool use_svd) {
             }
             row++;
         }
+        cov_mat_file.close();
     }
     cout << "Got sigma ..." << endl;
     //Get the eigen values and vectors of Covariance Matrix

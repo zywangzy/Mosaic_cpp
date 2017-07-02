@@ -9,7 +9,7 @@
 #include <Eigen3/Eigen/Dense>
 #include <Eigen3/Eigen/Sparse>
 #include "imgSegmentation.h"
-#include "pca.h"
+//#include "pca.h"
 
 using namespace Eigen;
 
@@ -50,11 +50,15 @@ private:
     unordered_map<string, VectorXd> img_lib;
     Mat src_img;
     MatrixXd convert_matrix;
+    VectorXd vector_mean;
+    VectorXd vector_stddev;
 public:
     pcaMosaicGenerator(imgSegmentation& segment_obj, string basic_path, int r = 50);
     Mat generate();
+    string find_best_match_in_lib(colorHistVector& histVector);
     void library_reader();
     MatrixXd matrix_reader_from_csv(string path);
+    VectorXd vector_dimension_reduction(VectorXd& vector);
 };
 
 

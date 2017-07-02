@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
     //util::batch_compute_colorHistVector();
     //util::imgSegmentationTester();
     //util::mosaicGeneratorTester();
-    util::pcaTester();
+    //util::pcaTester();
+    util::pcaMosaicGeneratorTester();
     return 0;
 }

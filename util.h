@@ -10,6 +10,8 @@
 #include <string>
 #include <fstream>
 #include <opencv/cv.h>
+#include <Eigen3/Eigen/Dense>
+#include <Eigen3/Eigen/Sparse>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "colorHistVector.h"
@@ -19,6 +21,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace Eigen;
 
 class util {
 public:
@@ -26,6 +29,10 @@ public:
      * Check the version of OpenCV.
      */
     static void check_cv_version();
+
+    static VectorXd unfold_colorhist(colorHistVector& hist);
+
+    static double vector_distance(VectorXd& vec1, VectorXd& vec2);
     /**
      * Do batch processing of compressing library images.
      */
@@ -55,6 +62,8 @@ public:
     static void mosaicGeneratorTester();
 
     static void pcaTester();
+
+    static void pcaMosaicGeneratorTester();
 };
 
 

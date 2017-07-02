@@ -15,6 +15,29 @@ void util::check_cv_version() {
     cout << "************************************" << endl;
 }
 
+VectorXd util::unfold_colorhist(colorHistVector &hist) {
+    int color_level_count = hist.get_color_level_count();
+    int vector_dimension = color_level_count*color_level_count*color_level_count;
+    VectorXd result = VectorXd::Zero(vector_dimension);
+    vector<vector<vector<double>>>* ptr = hist.get_ptr_to_hist();
+    int count = 0;
+    for(int r = 0; r < color_level_count; r++){
+        for(int g = 0; g < color_level_count; g++){
+            for(int b = 0; b < color_level_count; b++){
+                result[count] = (*ptr)[r][g][b];
+                count++;
+            }
+        }
+    }
+    return result;
+}
+
+double util::vector_distance(VectorXd &vec1, VectorXd &vec2) {
+    assert(vec1.rows() == vec2.rows());
+    VectorXd diff = vec1 - vec2;
+    return sqrt(diff.squaredNorm());
+}
+
 void util::batchCompressImages(void){
     string path = "../aflw 2/data/flickr/";
     string src_path = path + "0/";
@@ -187,11 +210,34 @@ void util::pcaTester() {
     time(&raw_start_time);
     start_time = asctime(localtime(&raw_start_time));
     pca principle_component(generator, 30);
-    principle_component.get_eigen_colorhist(true, true);
+    principle_component.get_eigen_colorhist(false, true);
 
     time(&raw_end_time);
     end_time = asctime(localtime(&raw_end_time));
     cout << "pca computation" << endl;
     cout << "From: " << start_time;
     cout << "To: " << end_time;
+}
+
+void util::pcaMosaicGeneratorTester() {
+    Mat src = imread("../steve_jobs.jpg");
+    imgSegmentation segment(src, 20, 0.45, 20);
+    segment.segment();
+
+    pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 200);
+    cout << "pca mosaic generator constructed" << endl;
+
+    time_t raw_start_time; time(&raw_start_time);
+    string start_time = asctime(localtime(&raw_start_time));
+
+    Mat result = generator.generate();
+
+    time_t raw_end_time; time(&raw_end_time);
+    string end_time = asctime(localtime(&raw_end_time));
+
+    cout << "Mosaic Generation with pca" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    imwrite("../mosaic_result.png", result);
 }

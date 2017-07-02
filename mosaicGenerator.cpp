@@ -3,6 +3,7 @@
 //
 
 #include "mosaicGenerator.h"
+#include "util.h"
 
 mosaicGenerator::mosaicGenerator(imgSegmentation &segment_obj, string basic_path) {
     this->basic_path = basic_path;
@@ -58,24 +59,71 @@ pcaMosaicGenerator::pcaMosaicGenerator(imgSegmentation &segment_obj, string basi
     this->basic_path = basic_path;
     this->src_img = segment_obj.get_img();
     this->img_segments = segment_obj.getMap();
-    this->convert_matrix = matrix_reader_from_csv("../svd_matrixV.csv");
+    MatrixXd matrix_V = matrix_reader_from_csv("../svd_matrixV.csv");//n*n
+    this->convert_matrix = matrix_V.block(0, 0, matrix_V.rows(), r);//n*r
+    MatrixXd matrix_mean = matrix_reader_from_csv("../pca_mean.csv");
+    this->vector_mean = matrix_mean.col(0);
+    MatrixXd matrix_stddev = matrix_reader_from_csv("../pca_stddev.csv");
+    this->vector_stddev = matrix_stddev.col(0);
     library_reader();
 }
 
 Mat pcaMosaicGenerator::generate() {
-    return Mat();
+    cout << "Generating mosaic with pca..." << endl;
+    Mat result(src_img);
+    string img_path = basic_path + "compressed/";
+    cout << "img_path = " << img_path << endl;
+    cout << "Doing for loop..." << endl;
+    int count = 0;
+    for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
+        it != img_segments.end(); it++){
+        string key = find_best_match_in_lib(it->second->colorhist);
+        cout << key << "  ";
+        Mat src = imread(img_path + key + ".jpg");
+        cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
+        resize(src, src, Size(it->first.width, it->first.height));
+        src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
+        cout << ".";
+        if(++count % 50 == 0) cout << endl;
+    }
+    cout << endl;
+    return result;
+}
+
+string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
+    string result;
+    VectorXd original = util::unfold_colorhist(histVector);
+    VectorXd target = vector_dimension_reduction(original);
+    //(original.transpose() * convert_matrix).transpose();
+    cout << target << endl;
+    double best_sim = 0;
+    for(unordered_map<string, VectorXd>::iterator it = img_lib.begin();
+        it != img_lib.end(); it++){
+        double sim = util::vector_distance(target, it->second);
+        if(sim > best_sim){
+            result = it->first;
+            best_sim = sim;
+        }
+    }
+    cout << "bestsim = " << best_sim << endl;
+    cout << result << endl;
+    return result;
 }
 
 void pcaMosaicGenerator::library_reader() {
-    this->img_lib = unordered_map<string, MatrixXd>();
+    cout << "Reading library..." << endl;
+    this->img_lib = unordered_map<string, VectorXd>();
     ifstream list_file("../../CVML/Mosaic/list.txt");
     string line, src_path = basic_path + "colorHist/";
     while(getline(list_file, line)){
         string name = line.substr(0, line.length()-4);
-        cout << name << endl;
+        //cout << name << endl;
         colorHistVector chv(src_path + name + ".json");
-        this->img_lib[name] = pca::unfold_colorhist(chv);
+        VectorXd original = util::unfold_colorhist(chv);
+        this->img_lib[name] = vector_dimension_reduction(original);
+        assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
     }
+    cout << "Reading library done!" << endl;
 }
 
 MatrixXd pcaMosaicGenerator::matrix_reader_from_csv(string path) {
@@ -103,4 +151,14 @@ MatrixXd pcaMosaicGenerator::matrix_reader_from_csv(string path) {
     }
     tmp.clear();
     return result;
+}
+
+VectorXd pcaMosaicGenerator::vector_dimension_reduction(VectorXd &vector){
+    assert(vector.rows() == vector_mean.rows() &&
+           vector.rows() == vector_stddev.rows());
+    vector -= vector_mean;
+    for(int i = 0; i < vector.rows(); i++){
+        vector[i] /= vector_stddev[i];
+    }
+    return (vector.transpose() * convert_matrix).transpose();
 }
