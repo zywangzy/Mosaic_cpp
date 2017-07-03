@@ -93,10 +93,13 @@ Mat pcaMosaicGenerator::generate() {
 string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
     string result;
     VectorXd original = util::unfold_colorhist(histVector);
+    cout << "before dimension reduction" << endl;
+    cout << original << endl;
     VectorXd target = vector_dimension_reduction(original);
     //(original.transpose() * convert_matrix).transpose();
-    cout << target << endl;
-    double best_sim = 0;
+    cout << "after dimension reduction" << endl;
+    cout << original << endl;
+    double best_sim = -0.1;
     for(unordered_map<string, VectorXd>::iterator it = img_lib.begin();
         it != img_lib.end(); it++){
         double sim = util::vector_distance(target, it->second);
@@ -120,7 +123,8 @@ void pcaMosaicGenerator::library_reader() {
         //cout << name << endl;
         colorHistVector chv(src_path + name + ".json");
         VectorXd original = util::unfold_colorhist(chv);
-        this->img_lib[name] = vector_dimension_reduction(original);
+        VectorXd transformed = vector_dimension_reduction(original);
+        this->img_lib[name] = transformed;
         assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
     }
     cout << "Reading library done!" << endl;
@@ -156,9 +160,10 @@ MatrixXd pcaMosaicGenerator::matrix_reader_from_csv(string path) {
 VectorXd pcaMosaicGenerator::vector_dimension_reduction(VectorXd &vector){
     assert(vector.rows() == vector_mean.rows() &&
            vector.rows() == vector_stddev.rows());
-    vector -= vector_mean;
+    VectorXd diff = vector - vector_mean;
     for(int i = 0; i < vector.rows(); i++){
-        vector[i] /= vector_stddev[i];
+        diff[i] /= vector_stddev[i];
     }
-    return (vector.transpose() * convert_matrix).transpose();
+    VectorXd result = (diff.transpose() * convert_matrix).transpose();
+    return result;
 }

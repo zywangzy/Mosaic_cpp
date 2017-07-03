@@ -35,7 +35,12 @@ VectorXd util::unfold_colorhist(colorHistVector &hist) {
 double util::vector_distance(VectorXd &vec1, VectorXd &vec2) {
     assert(vec1.rows() == vec2.rows());
     VectorXd diff = vec1 - vec2;
-    return sqrt(diff.squaredNorm());
+    //return sqrt(diff.squaredNorm());
+    double sum = 0;
+    for(int i = 0; i < diff.rows(); i++){
+        sum += pow(diff[i], 2);
+    }
+    return sqrt(sum);
 }
 
 void util::batchCompressImages(void){
