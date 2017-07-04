@@ -64,8 +64,12 @@ pcaMosaicGenerator::pcaMosaicGenerator(imgSegmentation &segment_obj, string basi
     MatrixXd matrix_mean = matrix_reader_from_csv("../pca_mean.csv");
     this->vector_mean = matrix_mean.col(0);
     MatrixXd matrix_stddev = matrix_reader_from_csv("../pca_stddev.csv");
+    MatrixXd bias = MatrixXd::Ones(matrix_stddev.rows(), matrix_stddev.cols());
+    bias *= 0.5e-6;
+    //Add bias to stddev to prevent denominator being 0
+    matrix_stddev += bias;
     this->vector_stddev = matrix_stddev.col(0);
-    library_reader();
+    library_reader(false);
 }
 
 Mat pcaMosaicGenerator::generate() {
@@ -78,9 +82,9 @@ Mat pcaMosaicGenerator::generate() {
     for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
         it != img_segments.end(); it++){
         string key = find_best_match_in_lib(it->second->colorhist);
-        cout << key << "  ";
+        //cout << key << "  ";
         Mat src = imread(img_path + key + ".jpg");
-        cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
+        //cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
         resize(src, src, Size(it->first.width, it->first.height));
         src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
         cout << ".";
@@ -93,39 +97,50 @@ Mat pcaMosaicGenerator::generate() {
 string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
     string result;
     VectorXd original = util::unfold_colorhist(histVector);
-    cout << "before dimension reduction" << endl;
-    cout << original << endl;
     VectorXd target = vector_dimension_reduction(original);
-    //(original.transpose() * convert_matrix).transpose();
-    cout << "after dimension reduction" << endl;
-    cout << original << endl;
     double best_sim = -0.1;
     for(unordered_map<string, VectorXd>::iterator it = img_lib.begin();
         it != img_lib.end(); it++){
         double sim = util::vector_distance(target, it->second);
+        //cout << "sim = " << sim << endl;//sim scores are all "nan"
         if(sim > best_sim){
             result = it->first;
             best_sim = sim;
         }
     }
-    cout << "bestsim = " << best_sim << endl;
-    cout << result << endl;
+    cout << "bestsim = " << best_sim << endl << result << endl;
     return result;
 }
 
-void pcaMosaicGenerator::library_reader() {
+void pcaMosaicGenerator::library_reader(bool pca_src) {
     cout << "Reading library..." << endl;
     this->img_lib = unordered_map<string, VectorXd>();
     ifstream list_file("../../CVML/Mosaic/list.txt");
-    string line, src_path = basic_path + "colorHist/";
-    while(getline(list_file, line)){
-        string name = line.substr(0, line.length()-4);
-        //cout << name << endl;
-        colorHistVector chv(src_path + name + ".json");
-        VectorXd original = util::unfold_colorhist(chv);
-        VectorXd transformed = vector_dimension_reduction(original);
-        this->img_lib[name] = transformed;
-        assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
+    if(!pca_src){
+        string line, src_path = basic_path + "colorHist/";
+        string dst_path = basic_path + "pcaColor/";
+        int count = 0;
+        while(getline(list_file, line)){
+            string name = line.substr(0, line.length()-4);
+            cout << name << endl;
+            colorHistVector chv(src_path + name + ".json");
+            VectorXd original = util::unfold_colorhist(chv);
+            VectorXd transformed = vector_dimension_reduction(original);
+            util::save_vectorxd_to_json(dst_path + name + ".json", transformed);
+            this->img_lib[name] = transformed;
+            assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
+        }
+    }
+    else{
+        string line, src_path = basic_path + "pcaColor/";
+        int count = 0;
+        while(getline(list_file, line)){
+            string name = line.substr(0, line.length()-4);
+            cout << name << endl;
+            VectorXd values = util::read_vectorxd_from_json(src_path + name + ".json");
+            this->img_lib[name] = values;
+            assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
+        }
     }
     cout << "Reading library done!" << endl;
 }

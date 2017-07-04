@@ -33,6 +33,10 @@ public:
     static VectorXd unfold_colorhist(colorHistVector& hist);
 
     static double vector_distance(VectorXd& vec1, VectorXd& vec2);
+
+    static void save_vectorxd_to_json(string path, VectorXd& vector);
+
+    static VectorXd read_vectorxd_from_json(string path);
     /**
      * Do batch processing of compressing library images.
      */

@@ -56,7 +56,7 @@ public:
     pcaMosaicGenerator(imgSegmentation& segment_obj, string basic_path, int r = 50);
     Mat generate();
     string find_best_match_in_lib(colorHistVector& histVector);
-    void library_reader();
+    void library_reader(bool pca_src);
     MatrixXd matrix_reader_from_csv(string path);
     VectorXd vector_dimension_reduction(VectorXd& vector);
 };

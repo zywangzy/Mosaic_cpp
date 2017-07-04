@@ -43,6 +43,35 @@ double util::vector_distance(VectorXd &vec1, VectorXd &vec2) {
     return sqrt(sum);
 }
 
+void util::save_vectorxd_to_json(string path, VectorXd& vector){
+    FileStorage fs(path, FileStorage::WRITE);
+    fs << "dimension" << vector.rows();
+    fs << "vectorxd" << "[";
+    for(int i = 0; i < vector.rows(); i++){
+        fs << vector[i];
+    }
+    fs << "]";
+    fs.release();
+}
+
+VectorXd util::read_vectorxd_from_json(string filename) {
+    FileStorage fs(filename, FileStorage::READ);
+    unsigned long filename_len = filename.length();
+    assert(filename.substr(filename_len - 5).compare(".json") == 0);
+    //Read the vector entries
+    int dimension;
+    fs["dimension"] >> dimension;
+    vector<double> source_vector;
+    fs["vectorxd"] >> source_vector;
+    fs.release();
+    assert(dimension == source_vector.size());
+    VectorXd result(dimension);
+    for(int i = 0; i < dimension; i++){
+        result[i] = source_vector[i];
+    }
+    return result;
+}
+
 void util::batchCompressImages(void){
     string path = "../aflw 2/data/flickr/";
     string src_path = path + "0/";
@@ -226,10 +255,10 @@ void util::pcaTester() {
 
 void util::pcaMosaicGeneratorTester() {
     Mat src = imread("../steve_jobs.jpg");
-    imgSegmentation segment(src, 20, 0.45, 20);
+    imgSegmentation segment(src, 20, 0.45, 10);
     segment.segment();
 
-    pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 200);
+    pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 50);
     cout << "pca mosaic generator constructed" << endl;
 
     time_t raw_start_time; time(&raw_start_time);
