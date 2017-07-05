@@ -7,11 +7,14 @@
 
 #include <Eigen3/Eigen/Dense>
 #include <Eigen3/Eigen/Sparse>
+#include <Eigen3/Eigen/SVD>
 #include "mosaicGenerator.h"
 
 using namespace std;
 using namespace cv;
 using namespace Eigen;
+
+const static IOFormat CSV_Format(StreamPrecision, DontAlignCols, ", ", "\n");
 
 class pca {
 private:
@@ -33,7 +36,7 @@ public:
     /**
      * Compute the eigen vectors of color histograms.
      */
-    void get_eigen_colorhist();
+    void get_eigen_colorhist(bool read_cov_mat, bool use_svd);
     /**
      * Convert the 3d-matrix of color histogram to vector with size vector_dimension * 1.
      */

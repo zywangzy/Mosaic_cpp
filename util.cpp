@@ -15,22 +15,82 @@ void util::check_cv_version() {
     cout << "************************************" << endl;
 }
 
+VectorXd util::unfold_colorhist(colorHistVector &hist) {
+    int color_level_count = hist.get_color_level_count();
+    int vector_dimension = color_level_count*color_level_count*color_level_count;
+    VectorXd result = VectorXd::Zero(vector_dimension);
+    vector<vector<vector<double>>>* ptr = hist.get_ptr_to_hist();
+    int count = 0;
+    for(int r = 0; r < color_level_count; r++){
+        for(int g = 0; g < color_level_count; g++){
+            for(int b = 0; b < color_level_count; b++){
+                result[count] = (*ptr)[r][g][b];
+                count++;
+            }
+        }
+    }
+    return result;
+}
+
+double util::vector_distance(VectorXd &vec1, VectorXd &vec2) {
+    assert(vec1.rows() == vec2.rows());
+    VectorXd diff = vec1 - vec2;
+    //return sqrt(diff.squaredNorm());
+    double sum = 0;
+    for(int i = 0; i < diff.rows(); i++){
+        sum += pow(diff[i], 2);
+    }
+    return sqrt(sum);
+}
+
+void util::save_vectorxd_to_json(string path, VectorXd& vector){
+    FileStorage fs(path, FileStorage::WRITE);
+    fs << "dimension" << (int)vector.rows();
+    fs << "vectorxd" << "[";
+    for(int i = 0; i < vector.rows(); i++){
+        fs << vector[i];
+    }
+    fs << "]";
+    fs.release();
+}
+
+VectorXd util::read_vectorxd_from_json(string filename) {
+    FileStorage fs(filename, FileStorage::READ);
+    unsigned long filename_len = filename.length();
+    assert(filename.substr(filename_len - 5).compare(".json") == 0);
+    //Read the vector entries
+    int dimension;
+    fs["dimension"] >> dimension;
+    vector<double> source_vector;
+    fs["vectorxd"] >> source_vector;
+    fs.release();
+    assert(dimension == source_vector.size());
+    VectorXd result(dimension);
+    for(int i = 0; i < dimension; i++){
+        result[i] = source_vector[i];
+    }
+    //cout << "result" << endl << result << endl;
+    return result;
+}
+
 void util::batchCompressImages(void){
-    string path = "../aflw 2/data/flickr/";
+    string path = "../../CVML/Mosaic/aflw 2/data/flickr/";
     string src_path = path + "0/";
     string dst_path = path + "compressed/";
 
-    ifstream list_file("../list.txt");
+    ifstream list_file("../../CVML/Mosaic/list.txt");
 
     string line;
     while(getline(list_file, line)){
-        cout << line << endl;
+        //cout << line << endl;
+        string name = line.substr(0, line.length()-4);
+        cout << name << endl;
         Mat src = imread(src_path + line);
         int dst_size = min(src.cols, src.rows);
         Mat dst = src(Range((src.rows - dst_size)/2, (src.rows + dst_size)/2),
                       Range((src.cols - dst_size)/2, (src.cols + dst_size)/2));
         resize(dst, dst, Size(compress_size, compress_size));
-        imwrite(dst_path + line, dst);
+        imwrite(dst_path + name + ".png", dst);
     }
 }
 
@@ -162,6 +222,57 @@ void util::mosaicGeneratorTester() {
     end_time = asctime(localtime(&raw_end_time));
 
     cout << "Mosaic Generation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    imwrite("../mosaic_result.png", result);
+}
+
+void util::pcaTester() {
+    time_t raw_start_time; time(&raw_start_time);
+    string start_time = asctime(localtime(&raw_start_time));
+
+    Mat src = imread("../steve_jobs.jpg");
+    imgSegmentation segment(src, 20, 0.45, 20);
+    segment.segment();
+
+    time_t raw_end_time; time(&raw_end_time);
+    string end_time = asctime(localtime(&raw_end_time));
+    cout << "Image segmentation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+
+    //time(&raw_start_time);
+    mosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/");
+    time(&raw_start_time);
+    start_time = asctime(localtime(&raw_start_time));
+    pca principle_component(generator, 30);
+    principle_component.get_eigen_colorhist(false, true);
+
+    time(&raw_end_time);
+    end_time = asctime(localtime(&raw_end_time));
+    cout << "pca computation" << endl;
+    cout << "From: " << start_time;
+    cout << "To: " << end_time;
+}
+
+void util::pcaMosaicGeneratorTester() {
+    Mat src = imread("../steve_jobs.jpg");
+    imgSegmentation segment(src, 20, 0.45, 5);
+    segment.segment();
+
+    pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 200);
+    cout << "pca mosaic generator constructed" << endl;
+
+    time_t raw_start_time; time(&raw_start_time);
+    string start_time = asctime(localtime(&raw_start_time));
+
+    Mat result = generator.generate();
+
+    time_t raw_end_time; time(&raw_end_time);
+    string end_time = asctime(localtime(&raw_end_time));
+
+    cout << "Mosaic Generation with pca" << endl;
     cout << "From: " << start_time;
     cout << "To: " << end_time;
 
