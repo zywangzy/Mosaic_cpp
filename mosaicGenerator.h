@@ -21,14 +21,15 @@ private:
     Mat src_img;
 public:
     /**
-     *
-     * @param segment_obj
-     * @param basic_path
+     * Constructor of mosaicGenerator.
+     * @param segment_obj the object of image segmentation result.
+     * @param basic_path the path of image library.
      */
     mosaicGenerator(imgSegmentation& segment_obj, string basic_path);
     mosaicGenerator(){};
     /**
-     *
+     * Generate the final mosaic result. Iterate all chunks in segmentation result,
+     * get the optimal replacement image from library and return the result image.
      * @return
      */
     Mat generate();
@@ -38,7 +39,15 @@ public:
      */
     unordered_map<string, colorHistVector>* get_img_lib() { return &img_lib; };
 private:
+    /**
+     * Helper method to get all the colorHistVector objects from library.
+     */
     void library_reader();
+    /**
+     * Helper method to find the best matching hist in library for input hist.
+     * @param histVector given color histogram vector.
+     * @return the key of best matching hist in map.
+     */
     string find_target_in_lib(colorHistVector& histVector);
 };
 
