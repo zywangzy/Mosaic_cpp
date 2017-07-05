@@ -45,7 +45,7 @@ double util::vector_distance(VectorXd &vec1, VectorXd &vec2) {
 
 void util::save_vectorxd_to_json(string path, VectorXd& vector){
     FileStorage fs(path, FileStorage::WRITE);
-    fs << "dimension" << vector.rows();
+    fs << "dimension" << (int)vector.rows();
     fs << "vectorxd" << "[";
     for(int i = 0; i < vector.rows(); i++){
         fs << vector[i];
@@ -69,25 +69,28 @@ VectorXd util::read_vectorxd_from_json(string filename) {
     for(int i = 0; i < dimension; i++){
         result[i] = source_vector[i];
     }
+    //cout << "result" << endl << result << endl;
     return result;
 }
 
 void util::batchCompressImages(void){
-    string path = "../aflw 2/data/flickr/";
+    string path = "../../CVML/Mosaic/aflw 2/data/flickr/";
     string src_path = path + "0/";
     string dst_path = path + "compressed/";
 
-    ifstream list_file("../list.txt");
+    ifstream list_file("../../CVML/Mosaic/list.txt");
 
     string line;
     while(getline(list_file, line)){
-        cout << line << endl;
+        //cout << line << endl;
+        string name = line.substr(0, line.length()-4);
+        cout << name << endl;
         Mat src = imread(src_path + line);
         int dst_size = min(src.cols, src.rows);
         Mat dst = src(Range((src.rows - dst_size)/2, (src.rows + dst_size)/2),
                       Range((src.cols - dst_size)/2, (src.cols + dst_size)/2));
         resize(dst, dst, Size(compress_size, compress_size));
-        imwrite(dst_path + line, dst);
+        imwrite(dst_path + name + ".png", dst);
     }
 }
 
@@ -255,10 +258,10 @@ void util::pcaTester() {
 
 void util::pcaMosaicGeneratorTester() {
     Mat src = imread("../steve_jobs.jpg");
-    imgSegmentation segment(src, 20, 0.45, 10);
+    imgSegmentation segment(src, 20, 0.45, 5);
     segment.segment();
 
-    pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 50);
+    pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 200);
     cout << "pca mosaic generator constructed" << endl;
 
     time_t raw_start_time; time(&raw_start_time);
