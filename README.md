@@ -7,7 +7,6 @@ Source image
 Result image
 
 ![alt text](https://github.com/wangzyusc/Mosaic_cpp/blob/master/jobs_mosaic_initial_result.png)
-<<<<<<< HEAD
 
 Algorithm Pipeline:
 1. Generate the color histogram features for all the library images and save them into local files.
@@ -16,8 +15,6 @@ Algorithm Pipeline:
 
 Progress:
 1. Used PCA to reduce dimensions for color histogram features to reduce computation workload during finding best-match image for each chunk.
-=======
->>>>>>> c6bbe40a109d4bc5c5e50db94d472870e00eb8a6
 
 Personal note:
 Use the following command to get the number of lines of code:
