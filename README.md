@@ -5,7 +5,7 @@ Example:
 Source image
 ![alt text](http://static3.businessinsider.com/image/58586374ca7f0cfd788b4c6c/apple-is-losing-its-focus-again--and-this-time-theres-no-steve-jobs-coming-to-the-rescue.jpg)
 Result image
-![alt text](https://github.com/wangzyusc/Mosaic_cpp/master/jobs_mosaic_initial_result.png)
+![alt text](https://github.com/wangzyusc/Mosaic_cpp/blob/master/jobs_mosaic_initial_result.png)
 
 Personal note:
 Use the following command to get the number of lines of code:
