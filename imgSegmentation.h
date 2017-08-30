@@ -71,6 +71,10 @@ public:
     imgSegmentation(Mat &img, int color_resolution = 10, double similarity_threshold = 0.5,
                     int min_size = 20, int max_size = 160);
     /**
+     * Destructor.
+     */
+    ~imgSegmentation();
+    /**
      * The method doing actual segmentation.
      */
     void segment();

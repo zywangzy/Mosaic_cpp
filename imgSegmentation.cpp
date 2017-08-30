@@ -44,6 +44,14 @@ imgSegmentation::imgSegmentation(Mat &img, int color_resolution, double sim_thre
     imgCropper(img, min_size);
 }
 
+imgSegmentation::~imgSegmentation() {
+    for(unordered_map<mRect, block*>::iterator it = this->map.begin();
+            it != this->map.end(); it++){
+        delete it->second;
+        it->second = nullptr;
+    }
+}
+
 void imgSegmentation::imgCropper(Mat &img, int min_size) {
     int width = img.cols, height = img.rows;
     int width_remainder = width % min_size, height_remainder = height % min_size;

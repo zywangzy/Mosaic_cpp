@@ -32,11 +32,15 @@ void mosaicGenerator::library_reader() {
     this->img_lib = unordered_map<string, colorHistVector>();
     ifstream list_file("../../CVML/Mosaic/list.txt");
     string line, src_path = basic_path + "colorHist/";
+    int count = 0;
     while(getline(list_file, line)){
         string name = line.substr(0, line.length()-4);
-        cout << name << endl;
+        //cout << name << endl;
+        cout << ".";
+        if(++count % 50 == 0) cout << " " << count << endl;
         this->img_lib[name] = colorHistVector(src_path + name + ".json");
     }
+    if(count % 50) cout << " " << count << endl;
 }
 
 string mosaicGenerator::find_target_in_lib(colorHistVector &histVector) {
@@ -72,6 +76,10 @@ pcaMosaicGenerator::pcaMosaicGenerator(imgSegmentation &segment_obj, string basi
     library_reader(false);
 }
 
+pcaMosaicGenerator::~pcaMosaicGenerator() {
+
+}
+
 Mat pcaMosaicGenerator::generate() {
     cout << "Generating mosaic with pca..." << endl;
     Mat result(src_img);
@@ -82,13 +90,13 @@ Mat pcaMosaicGenerator::generate() {
     for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
         it != img_segments.end(); it++){
         string key = find_best_match_in_lib(it->second->colorhist);
-        cout << "key = " << key << "  ";
+        //cout << "key = " << key << "  ";
         Mat src = imread(img_path + key + ".png");
-        cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
+        //cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
         resize(src, src, Size(it->first.width, it->first.height));
         src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
         cout << ".";
-        if(++count % 50 == 0) cout << endl;
+        if(++count % 50 == 0) cout << " " << count << endl;
     }
     cout << endl;
     return result;
@@ -109,7 +117,7 @@ string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
             best_distance = distance;
         }
     }
-    cout << "best_distance = " << best_distance << "   " << result << endl;
+    //cout << "best_distance = " << best_distance << "   " << result << endl;
     return result;
 }
 
@@ -124,7 +132,9 @@ void pcaMosaicGenerator::library_reader(bool pca_src) {
         int count = 0;
         while(getline(list_file, line)){
             string name = line.substr(0, line.length()-4);
-            cout << name << endl;
+            //cout << name << endl;
+            cout << ".";
+            if(++count % 50 == 0) cout << " " << count << endl;
             colorHistVector chv(src_path + name + ".json");
             VectorXd original = util::unfold_colorhist(chv);
             VectorXd transformed = vector_dimension_reduction(original);
@@ -132,6 +142,7 @@ void pcaMosaicGenerator::library_reader(bool pca_src) {
             this->img_lib[name] = transformed;
             assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
         }
+        if(count % 50) cout << " " << count << endl;
     }
     //Read from VectorXd library
     else{

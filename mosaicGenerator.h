@@ -27,6 +27,7 @@ public:
      */
     mosaicGenerator(imgSegmentation& segment_obj, string basic_path);
     mosaicGenerator(){};
+    ~mosaicGenerator(){};//for now only implemented destructor for pcaMosaicGenerator
     /**
      * Generate the final mosaic result. Iterate all chunks in segmentation result,
      * get the optimal replacement image from library and return the result image.
@@ -63,6 +64,7 @@ private:
     VectorXd vector_stddev;
 public:
     pcaMosaicGenerator(imgSegmentation& segment_obj, string basic_path, int r = 50);
+    ~pcaMosaicGenerator();
     Mat generate();
     string find_best_match_in_lib(colorHistVector& histVector);
     void library_reader(bool pca_src);
