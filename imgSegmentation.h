@@ -41,11 +41,12 @@ struct std::hash<mRect>{
 class block {
 public:
     block(Mat const& img, mRect const& roi, int colorRes);
+    ~block();
     //bool operator==(const block& b);
 public:
     int size;
     //mRect roi;
-    colorHistVector colorhist;
+    colorHistVector* colorhist;
 };
 
 /**

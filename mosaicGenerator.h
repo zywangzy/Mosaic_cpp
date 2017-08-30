@@ -57,7 +57,7 @@ private:
     int pca_dimension;
     string basic_path;
     unordered_map<mRect, block*> img_segments;
-    unordered_map<string, VectorXd> img_lib;
+    unordered_map<string, VectorXd*> img_lib;
     Mat src_img;
     MatrixXd convert_matrix;
     VectorXd vector_mean;

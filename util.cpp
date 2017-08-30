@@ -258,7 +258,7 @@ void util::pcaTester() {
 
 void util::pcaMosaicGeneratorTester() {
     Mat src = imread("../steve_jobs.jpg");
-    imgSegmentation segment(src, 20, 0.45, 5);
+    imgSegmentation segment(src, 20, 0.45, 20);
     segment.segment();
 
     pcaMosaicGenerator generator(segment, "../../CVML/Mosaic/aflw 2/data/flickr/", 200);

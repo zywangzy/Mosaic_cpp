@@ -20,7 +20,7 @@ Mat mosaicGenerator::generate() {
     cout << "Doing for loop..." << endl;
     for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
             it != img_segments.end(); it++){
-        string key = find_target_in_lib(it->second->colorhist);
+        string key = find_target_in_lib(*(it->second->colorhist));
         Mat src = imread(img_path + key + ".png");
         resize(src, src, Size(it->first.width, it->first.height));
         src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
@@ -77,7 +77,11 @@ pcaMosaicGenerator::pcaMosaicGenerator(imgSegmentation &segment_obj, string basi
 }
 
 pcaMosaicGenerator::~pcaMosaicGenerator() {
-
+    for(unordered_map<string, VectorXd*>::iterator it = img_lib.begin();
+        it != img_lib.end(); it++){
+        delete it->second;
+        it->second = nullptr;
+    }
 }
 
 Mat pcaMosaicGenerator::generate() {
@@ -89,7 +93,7 @@ Mat pcaMosaicGenerator::generate() {
     int count = 0;
     for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
         it != img_segments.end(); it++){
-        string key = find_best_match_in_lib(it->second->colorhist);
+        string key = find_best_match_in_lib(*(it->second->colorhist));
         //cout << "key = " << key << "  ";
         Mat src = imread(img_path + key + ".png");
         //cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
@@ -98,7 +102,7 @@ Mat pcaMosaicGenerator::generate() {
         cout << ".";
         if(++count % 50 == 0) cout << " " << count << endl;
     }
-    cout << endl;
+    if(count % 50) cout << " " << count << endl;
     return result;
 }
 
@@ -107,11 +111,10 @@ string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
     VectorXd original = util::unfold_colorhist(histVector);
     VectorXd target = vector_dimension_reduction(original);
     double best_distance = 1e4;
-    bool written = false;
-    for(unordered_map<string, VectorXd>::iterator it = img_lib.begin();
+    for(unordered_map<string, VectorXd*>::iterator it = img_lib.begin();
         it != img_lib.end(); it++){
         //changed the standard from similarity to distance...
-        double distance = util::vector_distance(target, it->second);
+        double distance = util::vector_distance(target, *(it->second));
         if(distance < best_distance){
             result = it->first;
             best_distance = distance;
@@ -123,7 +126,7 @@ string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
 
 void pcaMosaicGenerator::library_reader(bool pca_src) {
     cout << "Reading library..." << endl;
-    this->img_lib = unordered_map<string, VectorXd>();
+    this->img_lib = unordered_map<string, VectorXd*>();
     ifstream list_file("../../CVML/Mosaic/list.txt");
     //Read from colorHistVector library
     if(!pca_src){
@@ -139,8 +142,8 @@ void pcaMosaicGenerator::library_reader(bool pca_src) {
             VectorXd original = util::unfold_colorhist(chv);
             VectorXd transformed = vector_dimension_reduction(original);
             util::save_vectorxd_to_json(dst_path + name + ".json", transformed);
-            this->img_lib[name] = transformed;
-            assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
+            this->img_lib[name] = new VectorXd(transformed);
+            assert(img_lib[name]->rows() == pca_dimension && img_lib[name]->cols() == 1);
         }
         if(count % 50) cout << " " << count << endl;
     }
@@ -154,8 +157,8 @@ void pcaMosaicGenerator::library_reader(bool pca_src) {
             VectorXd values = util::read_vectorxd_from_json(src_path + name + ".json");
             values = values.block(0, 0, pca_dimension, 1);
             //cout << "values" << endl << values << endl;
-            this->img_lib[name] = values;
-            assert(img_lib[name].rows() == pca_dimension && img_lib[name].cols() == 1);
+            this->img_lib[name] = new VectorXd(values);
+            assert(img_lib[name]->rows() == pca_dimension && img_lib[name]->cols() == 1);
         }
     }
     cout << "Reading library done!" << endl;
