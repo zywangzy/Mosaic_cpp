@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <opencv/cv.h>
+#include <opencv2/imgproc.hpp>
 
 using namespace std;
 using namespace cv;
@@ -87,5 +88,18 @@ private:
     void init_3dvector();
 };
 
+/**
+ * This class represents color histogram vector in HSV color space.
+ */
+class hsvHistVector{
+public:
+    Mat mVector;
+public:
+    hsvHistVector(){};
+    hsvHistVector(Mat& src);
+    hsvHistVector(Mat& src, Rect& roi);
+    hsvHistVector(string srcfilepath);
+    void print_info();
+};
 
 #endif //MOSAIC_COLORHISTVECTOR_H

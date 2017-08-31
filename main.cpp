@@ -10,11 +10,14 @@ int main(int argc, char** argv) {
     // util::batchCompressImages();
     // Step 2: try to get the color histogram of each library image.
     //util::colorHistVectorTester();
-    //Next step: batch processing color histogram vector for library images.
+    // Step 3: batch processing color histogram vector for library images.
     //util::batch_compute_colorHistVector();
+    // Step 4: For each input image, do segmentation and merge for small chunks.
     //util::imgSegmentationTester();
+    // Step 5: For each chunk in the input image, find the closest matching image in library.
     //util::mosaicGeneratorTester();
     //util::pcaTester();
-    util::pcaMosaicGeneratorTester();
+    //util::pcaMosaicGeneratorTester();
+    util::hsvHistTester();
     return 0;
 }

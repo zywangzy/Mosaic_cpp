@@ -5,6 +5,18 @@
 
 #include "colorHistVector.h"
 
+int h_bins = 32;
+int s_bins = 30;
+int v_bins = 16;
+int histSize[] = {h_bins, s_bins, v_bins};
+
+float h_ranges[] = { 0, 256 };
+float s_ranges[] = { 0, 180 };
+float v_ranges[] = { 0, 256 };
+
+const float* ranges[] = { h_ranges, s_ranges, v_ranges };
+int channels[] = { 0, 1, 2};
+
 colorHistVector::colorHistVector(const Mat &img, int colorRes) {
     this->colorSpaceResolution = colorRes;
     this->colorLevelCount = (int)ceil(256.0 / colorRes);
@@ -156,4 +168,28 @@ bool colorHistVector::checkInBound(const Mat &img, const Rect &roi) {
         && (roi.y >= 0) && (roi.y < img.rows)
         && (roi.width >= 0) && (roi.x + roi.width <= img.cols)
         && (roi.height >= 0) && (roi.y + roi.height <= img.rows);
+}
+
+hsvHistVector::hsvHistVector(Mat &img) {
+    int pixel_count = img.cols * img.rows;
+    double increment_unit = 1.0 / pixel_count;
+    //convert from RGB to HSV color space
+    cvtColor(img, img, COLOR_BGR2HSV);
+    //calculate histogram
+    calcHist(&img, 1, channels, Mat(), mVector, 3, histSize, ranges, true, false);
+}
+
+void hsvHistVector::print_info() {
+    cout << "dims = " << mVector.dims << endl;
+    double sum = 0;
+    for(int x = 0; x < h_bins; x++){
+        for(int y = 0; y < s_bins; y++){
+            for(int z = 0; z < v_bins; z++){
+                sum += mVector.at<double>(x, y, z);
+                cout << mVector.at<float>(x, y, z) << ", ";
+            }
+            cout << endl;
+        }
+    }
+    cout << "sum = " << sum << endl;
 }

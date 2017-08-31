@@ -68,6 +68,8 @@ public:
     static void pcaTester();
 
     static void pcaMosaicGeneratorTester();
+
+    static void hsvHistTester();
 };
 
 
