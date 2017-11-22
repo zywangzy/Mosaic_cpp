@@ -18,12 +18,11 @@ Mat mosaicGenerator::generate() {
     string img_path = basic_path + "compressed/";
     cout << "img_path = " << img_path << endl;
     cout << "Doing for loop..." << endl;
-    for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
-            it != img_segments.end(); it++){
-        string key = find_target_in_lib(*(it->second->colorhist));
+    for(auto it: img_segments){
+        string key = find_target_in_lib(*(it.second->colorhist));
         Mat src = imread(img_path + key + ".png");
-        resize(src, src, Size(it->first.width, it->first.height));
-        src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
+        resize(src, src, Size(it.first.width, it.first.height));
+        src.copyTo(result(Rect(it.first.x, it.first.y, it.first.width, it.first.height)));
     }
     return result;
 }
@@ -46,11 +45,10 @@ void mosaicGenerator::library_reader() {
 string mosaicGenerator::find_target_in_lib(colorHistVector &histVector) {
     string result;
     double best_sim = 0;
-    for(unordered_map<string, colorHistVector>::iterator it = img_lib.begin();
-            it != img_lib.end(); it++){
+    for(auto it: img_lib){
         double sim = colorHistVector::colorSimilarity(histVector, it->second);
         if(sim > best_sim){
-            result = it->first;
+            result = it.first;
             best_sim = sim;
         }
     }
@@ -77,11 +75,11 @@ pcaMosaicGenerator::pcaMosaicGenerator(imgSegmentation &segment_obj, string basi
 }
 
 pcaMosaicGenerator::~pcaMosaicGenerator() {
-    for(unordered_map<string, VectorXd*>::iterator it = img_lib.begin();
-        it != img_lib.end(); it++){
-        delete it->second;
-        it->second = nullptr;
+    for(auto it: img_lib){
+        delete it.second;
+        it.second = nullptr;
     }
+    img_lib.clear();
 }
 
 Mat pcaMosaicGenerator::generate() {
@@ -91,14 +89,13 @@ Mat pcaMosaicGenerator::generate() {
     cout << "img_path = " << img_path << endl;
     cout << "Doing for loop..." << endl;
     int count = 0;
-    for(unordered_map<mRect, block*>::iterator it = img_segments.begin();
-        it != img_segments.end(); it++){
-        string key = find_best_match_in_lib(*(it->second->colorhist));
+    for(auto it: img_segments){
+        string key = find_best_match_in_lib(*(it.second->colorhist));
         //cout << "key = " << key << "  ";
         Mat src = imread(img_path + key + ".png");
         //cout << src.rows << ", " << src.cols << ", " << it->first.width << ", " << it->first.height << endl;
-        resize(src, src, Size(it->first.width, it->first.height));
-        src.copyTo(result(Rect(it->first.x, it->first.y, it->first.width, it->first.height)));
+        resize(src, src, Size(it.first.width, it.first.height));
+        src.copyTo(result(Rect(it.first.x, it.first.y, it.first.width, it.first.height)));
         cout << ".";
         if(++count % 50 == 0) cout << " " << count << endl;
     }
@@ -111,12 +108,11 @@ string pcaMosaicGenerator::find_best_match_in_lib(colorHistVector &histVector) {
     VectorXd original = util::unfold_colorhist(histVector);
     VectorXd target = vector_dimension_reduction(original);
     double best_distance = 1e4;
-    for(unordered_map<string, VectorXd*>::iterator it = img_lib.begin();
-        it != img_lib.end(); it++){
+    for(auto it: img_lib){
         //changed the standard from similarity to distance...
         double distance = util::vector_distance(target, *(it->second));
         if(distance < best_distance){
-            result = it->first;
+            result = it.first;
             best_distance = distance;
         }
     }

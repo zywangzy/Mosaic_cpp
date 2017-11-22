@@ -278,3 +278,15 @@ void util::pcaMosaicGeneratorTester() {
 
     imwrite("../mosaic_result.png", result);
 }
+
+void util::hsvHistTester() {
+    Mat src1 = imread("../steve_jobs.jpg");
+    Mat src2 = imread("../lena.bmp");
+    hsvHistVector vector1(src1);
+    hsvHistVector vector2(src2);
+    //vector1.print_info();
+    double correlation1 = compareHist(vector1.mVector, vector2.mVector, CV_COMP_CORREL);
+    double correlation2 = compareHist(vector1.mVector, vector1.mVector, CV_COMP_CORREL);
+    cout << "cor-relation between src1 and src1 is " << correlation2 << endl;
+    cout << "cor-relation between src1 and src2 is " << correlation1 << endl;
+}
