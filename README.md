@@ -16,6 +16,11 @@ Algorithm Pipeline:
 Progress:
 1. Used PCA to reduce dimensions for color histogram features to reduce computation workload during finding best-match image for each chunk.
 
+Next steps:
+1. Use more efficient way to search for best-matching image.
+2. Use markup language (e.g. .xml) files to configure the project.
+3. Build API for Python or other script languages.
+
 Personal note:
 Use the following command to get the number of lines of code:
 git log --author="wangzyusc" --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -

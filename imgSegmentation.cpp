@@ -39,16 +39,16 @@ block::~block() {
 imgSegmentation::imgSegmentation(Mat &img, int color_resolution, double sim_threshold, int min_size, int max_size):
     color_resolution(color_resolution), similarity_threshold(sim_threshold), min_size(min_size), max_size(max_size)
 {
-    this->map = unordered_map<mRect, block*>();
+    //this->map = unordered_map<mRect, block*>();
     imgCropper(img, min_size);
 }
 
 imgSegmentation::~imgSegmentation() {
-    for(unordered_map<mRect, block*>::iterator it = this->map.begin();
-            it != this->map.end(); it++){
-        delete it->second;
-        it->second = nullptr;
+    for(auto it: this->map){
+        delete it.second;
+        it.second = nullptr;
     }
+    this->map.clear();
 }
 
 void imgSegmentation::imgCropper(Mat &img, int min_size) {
@@ -71,8 +71,7 @@ void imgSegmentation::initialize_segments() {
     for(int i = 0; i < x_num; i++){
         for(int j = 0; j < y_num; j++){
             const mRect rect(i * min_size, j * min_size, min_size, min_size);
-            block* mblock = new block(mImg, rect, color_resolution);
-            map[rect] = mblock;
+            map[rect] = new block(mImg, rect, color_resolution);
         }
     }
 }
@@ -87,16 +86,14 @@ void imgSegmentation::merge_segments(){
         cout << ++line_count << "   " << map.size() << endl;
         bool merges_exist = false;
         unordered_set<mRect> merged;
-        for(unordered_map<mRect, block*>::iterator it = map.begin(); it != map.end(); it++){
-            if (merged.find(it->first) != merged.end()) continue;//erase in for loop would make the iteration afterward invalid
-            mRect rect = it->first;//it would raise Exception: EXC_BAD_ACCESS (code=EXC_I386_GPFLT) this line
-            vector<vector<mRect>> candidates = get_candidate_rois(rect);
+        for(auto it: map){
+            if (merged.find(it.first) != merged.end()) continue;
+            vector<vector<mRect>> candidates = get_candidate_rois(it.first);
             for(int i = 0; i < candidates.size(); i++){
-                vector<mRect> items = candidates[i];
-                if(valid_for_merge(items, merged)){
-                    mRect newroi = merge_rois(items);
+                if(valid_for_merge(candidates[i], merged)){
+                    mRect newroi = merge_rois(candidates[i]);
                     block* newblock = new block(this->mImg, newroi, this->color_resolution);
-                    for(mRect item: items){
+                    for(mRect& item: candidates[i]){
                         merged.insert(item);
                     }
                     map[newroi] = newblock;
@@ -105,11 +102,11 @@ void imgSegmentation::merge_segments(){
                 }
             }
         }
-        for(unordered_set<mRect>::iterator it = merged.begin(); it != merged.end(); it++){
+        for(auto it: merged){
             //delete entries (call destructor of block)
-            delete map[*it];
+            delete map[it];
             //make entry in map clean
-            map.erase(*it);
+            map.erase(it);
         }
         stop = !merges_exist;
     }

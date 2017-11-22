@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     // Step 5: For each chunk in the input image, find the closest matching image in library.
     //util::mosaicGeneratorTester();
     //util::pcaTester();
-    //util::pcaMosaicGeneratorTester();
-    util::hsvHistTester();
+    util::pcaMosaicGeneratorTester();
+    //util::hsvHistTester();
     return 0;
 }
